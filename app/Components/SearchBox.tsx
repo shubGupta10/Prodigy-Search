@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Search, Loader2, History, X } from 'lucide-react';
 import AIChecker from './AIChecker';
