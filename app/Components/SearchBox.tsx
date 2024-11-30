@@ -12,10 +12,7 @@ const SearchBox = () => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
-  const [searchHistory, setSearchHistory] = useState<string[]>(() => {
-    const saved = localStorage.getItem('searchHistory');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const historyRef = useRef<HTMLDivElement>(null);
@@ -57,9 +54,9 @@ const SearchBox = () => {
 
       setResults(validResults);
       
+      // Add to search history, avoiding duplicates
       setSearchHistory(prev => {
         const newHistory = [query, ...prev.filter(q => q !== query)].slice(0, 5);
-        localStorage.setItem('searchHistory', JSON.stringify(newHistory));
         return newHistory;
       });
     } catch (error) {
@@ -171,4 +168,3 @@ const SearchBox = () => {
 };
 
 export default SearchBox;
-

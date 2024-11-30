@@ -2,27 +2,42 @@ import { SearchResult } from '../types';
 
 export const extractPriceFromText = (text: string): string | null => {
   const patterns = [
-    /₹\s*([\d,]+(?:\.\d{2})?)/,  // ₹1,234.56
-    /Rs\.?\s*([\d,]+(?:\.\d{2})?)/i,  // Rs. 1,234.56
-    /INR\s*([\d,]+(?:\.\d{2})?)/i,  // INR 1,234.56
-    /([\d,]+(?:\.\d{2})?)\s*rupees/i,  // 1,234.56 rupees
-    /price:?\s*₹\s*([\d,]+(?:\.\d{2})?)/i,  // Price: ₹1,234.56
-    /MRP:?\s*₹\s*([\d,]+(?:\.\d{2})?)/i,  // MRP: ₹1,234.56
+    // More precise regex for different price formats
+    /(?:₹|Rs\.?)\s*([\d,]+(?:\.\d{2})?)/i,  // ₹1,234.56 or Rs. 1,234.56
+    /\b([\d,]+(?:\.\d{2})?)\s*(?:rupees|INR)\b/i,  // 1,234.56 rupees
+    /price\s*:?\s*(?:₹|Rs\.?)\s*([\d,]+(?:\.\d{2})?)/i,  // Price: ₹1,234.56
+    /MRP\s*:?\s*(?:₹|Rs\.?)\s*([\d,]+(?:\.\d{2})?)/i,  // MRP: ₹1,234.56
   ];
 
   for (const pattern of patterns) {
     const match = text?.match(pattern);
     if (match) {
-      const price = match[1].replace(/,/g, '');
-      const formattedPrice = new Intl.NumberFormat('en-IN', {
-        style: 'currency',
-        currency: 'INR',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 2
-      }).format(parseFloat(price));
-      return formattedPrice.replace('INR', '₹');
+      try {
+        // Remove commas and parse the price
+        const price = match[1].replace(/,/g, '');
+        const numericPrice = parseFloat(price);
+
+        // Validate price is reasonable (filter out extreme values)
+        if (isNaN(numericPrice) || numericPrice <= 0 || numericPrice > 1000000) {
+          continue;
+        }
+
+        // Format price with Indian number formatting
+        const formattedPrice = new Intl.NumberFormat('en-IN', {
+          style: 'currency',
+          currency: 'INR',
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 2
+        }).format(numericPrice).replace('INR', '₹');
+
+        return formattedPrice;
+      } catch (error) {
+        console.error('Price formatting error:', error);
+        continue;
+      }
     }
   }
+
   return null;
 };
 
