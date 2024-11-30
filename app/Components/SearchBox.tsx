@@ -22,7 +22,7 @@ const SearchBox = () => {
 
     setLoading(true);
     setShowHistory(false);
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_GEMINI_API_KEY;
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
     const cx = process.env.NEXT_PUBLIC_GOOGLE_SEARCH_CX;
 
     try {
